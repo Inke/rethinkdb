@@ -1,41 +1,67 @@
-# Copyright 2010-2012 RethinkDB, all rights reserved.
+# Copyright 2010-2013 RethinkDB, all rights reserved.
 
-DEBUG?=0
+# TODO:
+# if build_portable, then static v8
+# libunwind
+# tcmalloc doesn't link
+# remove colonizer
+# uninstall
+# build-deb-src doesn't build a portable package
+# is BUILD_PORTABLE needed?
+# test osx and other packages (including rpm)
+# warn if configure options are missing the CONFIGURE_FLAGS
+# make brew
+# precompile web assets and protoc
+# python on arch: /usr/bin/python is v3
 
+# Test make features
+ifeq (,$(filter else-if,$(.FEATURES)))
+	$(error GNU Make >= 3.8.1 is required)
+endif
+
+MAKEFLAGS += --no-print-directory
+MAKEFLAGS += --warn-undefined-variables 
+
+# Root of the rethinkdb source tree
+/ ?=
+
+# The default target
+.PHONY: all
 all:
-	cd src ; $(MAKE) STRIP_ON_INSTALL=0 DEBUG=$(DEBUG) PACKAGING=1 WEBRESDIR=/usr/share/rethinkdb/web ;
 
-install: all
-	cd src ; $(MAKE) STRIP_ON_INSTALL=0 DEBUG=$(DEBUG) PACKAGING=1 install ;
+# all, clean and distclean targets are defined in mk/local.mk
+ALL :=
+CLEAN :=
+DISTCLEAN :=
 
-clean:
-	rm -rf build
+# Two ways to Override the default settings:
+CUSTOM ?= $/custom.mk
+include $/mk/check-env.mk
+  # Settings local to this repository
+  -include $(CUSTOM)
+  # Pre-configured ways to build
+  WAY ?= default
+  include $/mk/way/$(WAY).mk
+include $/mk/check-env.mk
 
-distclean: clean
+# Generate and include the config file
+include $/mk/configure.mk
 
-build-deb-src-control:
-	cd src ; $(MAKE) DEBUG=$(DEBUG) ALLOW_INTERNAL_TOOLS=1 FETCH_INTERNAL_TOOLS=1 build-deb-src-control ;
+# Default values for target-independant settings
+include $/mk/way/default.mk
 
-build-deb-src: build-deb-src-control
-#	$(shell scripts/gen-version.sh > VERSION)
-	cd src ; $(MAKE) DEBUG=$(DEBUG) ALLOW_INTERNAL_TOOLS=1 FETCH_INTERNAL_TOOLS=1 PACKAGING=1 build-deb-support ;
-	rm -rf build support/build support/usr ;
-	yes | debuild -S -sa ;
+# Makefile related definitions
+include $/mk/lib.mk
 
-deb:
-	cd src ; $(MAKE) DEBUG=$(DEBUG) deb ;
+# Paths, build rules and other tools
+include $/mk/paths.mk
+include $/mk/support.mk
+include $/mk/install.mk
+include $/drivers/build.mk
+include $/mk/webui.mk
+include $/mk/build.mk
+include $/mk/packaging.mk
+include $/mk/tools.mk
 
-osx:
-	cd src && $(MAKE) DEBUG=0 BUILD_PORTABLE=1 STATIC=1 FETCH_INTERNAL_TOOLS=1 WEBRESDIR=/usr/local/share/rethinkdb/web BUILD_DRIVERS=0
-	rm -rf build/packaging/osx/
-	mkdir -p build/packaging/osx/pkg/usr/local/bin build/packaging/osx/pkg/usr/local/share/rethinkdb build/packaging/osx/dmg build/packaging/osx/install
-	cp build/release/rethinkdb build/packaging/osx/pkg/usr/local/bin/rethinkdb
-	cp -R build/release/rethinkdb_web_assets build/packaging/osx/pkg/usr/local/share/rethinkdb/web
-	pkgbuild --root build/packaging/osx/pkg --identifier rethinkdb build/packaging/osx/install/rethinkdb.pkg
-	productbuild --distribution packaging/osx/Distribution.xml --package-path build/packaging/osx/install/ build/packaging/osx/dmg/rethinkdb.pkg
-	cp packaging/osx/uninstall-rethinkdb.sh build/packaging/osx/dmg/uninstall-rethinkdb.sh
-	chmod +x build/packaging/osx/dmg/uninstall-rethinkdb.sh
-	hdiutil create -volname RethinkDB -srcfolder build/packaging/osx/dmg -ov build/packaging/osx/rethinkdb.dmg
-
-.PHONY: all install clean build-deb-src-control build-deb-src deb
-
+# Targets that behave differently based on the current directory (must be included last)
+include $/mk/local.mk
