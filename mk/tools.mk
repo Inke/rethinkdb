@@ -3,25 +3,27 @@
 ##### Generate ctags or etags file
 
 CTAGSPROG ?= ctags
-ETAGSPROG ?= $(CTAGSPROG) -e
+ETAGSPROG ?= etags
 
 TAGSFILE  ?= $/src/.tags
 ETAGSFILE ?= $/src/TAGS
 
-TAGFLAGS ?= -R --c++-kinds=+p --fields=+iaS --extra=+q --langmap="c++:.cc.tcc.hpp"
+CTAGFLAGS ?= -R --c++-kinds=+p --fields=+iaS --extra=+q --langmap="c++:.cc.tcc.hpp"
 
 .PHONY: tags etags
 tags: $(TAGSFILE)
 etags: $(ETAGSFILE)
 
-$(TAGSFILE):
-	$P TAGS
-	$(CTAGSPROG) $(TAGFLAGS) -f $@ $/src
+$(TAGSFILE): FORCE
+	$P TAGS $@
+	$(CTAGSPROG) $(CTAGFLAGS) -f $@ $/src
 
-$(ETAGSFILE):	
-	$P ETAGS
-	rm -f $(ETAGSFILE)
-	$(ETAGSPROG) $(TAGFLAGS) -f $(ETAGSFILE) $/src
+$(ETAGSFILE): FORCE
+	$P ETAGS $@
+	rm -rf $@
+	touch $@
+	find $/src \( -name \*.hpp -or -name \*.cc -or -name \*.tcc \) -print0 \
+	  | xargs -0 $(ETAGSPROG) -l c++ -a -o $@
 
 ##### cscope
 

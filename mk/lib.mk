@@ -3,7 +3,7 @@
 ##### Use bash
 
 ORIG_SHELL := $(SHELL)
-SHELL := /bin/bash
+SHELL := $(shell which bash)
 
 ##### Cancel builtin rules
 
@@ -14,6 +14,11 @@ SHELL := /bin/bash
 %: RCS/%
 %: s.%
 %: SCCS/s.%
+
+##### Special targets
+
+.PHONY: FORCE
+FORCE:
 
 ##### useful variables
 
@@ -42,7 +47,7 @@ COUNTDOWN_JUST_COUNT ?= 0
 ifeq (1,$(COUNTDOWN_JUST_COUNT))
   COUNTDOWN_TAG := !!!
 else ifeq (1,$(SHOW_COUNTDOWN))
-  COUNTDOWN_TOTAL := $(shell bash -c '$(MAKE) --dry-run COUNTDOWN_JUST_COUNT=1 $(MAKECMDGOALS) | grep "^   !!!" | wc -l' 2>/dev/null)
+  COUNTDOWN_TOTAL := $(shell bash -c 'echo `$(MAKE) --dry-run COUNTDOWN_JUST_COUNT=1 $(MAKECMDGOALS) | grep "^   !!!" | wc -l`' 2>/dev/null)
   COUNTDOWN_I := 1
   COUNTDOWN_TAG = [$(COUNTDOWN_I)/$(COUNTDOWN_TOTAL)]$(eval COUNTDOWN_I := $(shell expr $(COUNTDOWN_I) + 1))
 else
@@ -55,7 +60,7 @@ ifneq ($(VERBOSE),1)
   # $P traces the compilation when VERBOSE=0
   # '$P CP' becomes 'echo "   CP $^ -> $@"'
   # '$P foo bar' becomes 'echo "   FOO bar"'
-  P = +@bash -c 'prereq="$^"; echo "   $(COUNTDOWN_TAG) $${0^^} $${*:-$$prereq$${prereq:+ -> }$@}"'
+  P = +@bash -c 'prereq="$^"; echo "   $(COUNTDOWN_TAG) $$0 $${*:-$$prereq$${prereq:+ -> }$@}"'
 else
   # Let every rule be verbose and make $P quiet
   P := @\#

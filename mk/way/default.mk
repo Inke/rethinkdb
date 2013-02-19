@@ -11,6 +11,9 @@ CONFIGURE_FLAGS ?=
 # If set to 1, make will recompile when one of the makefiles changes
 IGNORE_MAKEFILE_CHANGES ?= 0
 
+# If set to 1, do not use -Werror
+ALLOW_WARNINGS ?= 0
+
 # Show the number of targets left to build
 SHOW_COUNTDOWN ?= 1
 

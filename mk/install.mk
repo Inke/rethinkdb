@@ -134,4 +134,5 @@ install-docs:
 	install -m755 -d $(DESTDIR)$(doc_dir)
 	install -m644 -T $(ASSETS_DIR)/docs/LICENSE $(DESTDIR)$(doc_dir)/copyright
 
+.PHONY: install
 install: install-binaries install-manpages install-docs install-tools install-web install-data install-config

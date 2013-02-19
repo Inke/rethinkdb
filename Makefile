@@ -13,6 +13,8 @@
 # make brew
 # precompile web assets and protoc
 # python on arch: /usr/bin/python is v3
+# flymake
+# configure from another directory sets it as the build directory and generates a Makefile
 
 # Test make features
 ifeq (,$(filter else-if,$(.FEATURES)))

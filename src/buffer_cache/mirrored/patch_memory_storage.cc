@@ -1,4 +1,5 @@
 // Copyright 2010-2012 RethinkDB, all rights reserved.
+#pragma clang diagnostic ignored "-Wunused-macros"
 #define __STDC_FORMAT_MACROS
 #include "buffer_cache/mirrored/patch_memory_storage.hpp"
 

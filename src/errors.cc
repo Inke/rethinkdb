@@ -75,6 +75,7 @@ void report_fatal_error(const char *file, int line, const char *msg, ...) {
 }
 
 const char *errno_string_maybe_using_buffer(int errsv, char *buf, size_t buflen) {
+#pragma clang diagnostic ignored "-Wundef"
 #if _GNU_SOURCE
     return strerror_r(errsv, buf, buflen);
 #else
